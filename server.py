@@ -1,18 +1,15 @@
 import socket
 import threading
 
-HEADER = 64
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
-FORMAT = 'utf-8'
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((SERVER, PORT))
 
 client_list = []
-#trying to store a username somehow
-#username_list = []
-#is_username = True
+username_list = []
+
 
 def keywords(conn, addr, msg):
     if msg == "!quit":
@@ -22,27 +19,26 @@ def keywords(conn, addr, msg):
         print(f"LIST_OF_CLIENT {client_list}")
 
 
-def handle_client(conn, addr):
-    connected = True
-    while connected:
+def handle_client(conn, addr, username):
+    while True:
         try:
-            msg_length = conn.recv(HEADER).decode(FORMAT)
+            msg_length = conn.recv(1024).decode('utf-8')
             if msg_length:
                 msg_length = int(msg_length)
-                msg = conn.recv(msg_length).decode(FORMAT)
-
-                #if is_username:
-                #    username_list.append(msg)
-                #    is_username = False
-
+                msg = conn.recv(msg_length).decode('utf-8')
                 print(f"{addr}> {msg}")
-                keywords(conn, addr, msg)
-                broadcast(f"{addr}> {msg}", conn)
-                conn.send("Msg received".encode(FORMAT))
+
+                #threadKeywords = threading.Thread(target=keywords, args=(conn, addr, msg))
+                #threadKeywords.start()
+
+                threadBroadcast = threading.Thread(target=broadcast, args=(f"{addr}> {msg}", conn))
+                threadBroadcast.start()
+
+                conn.send(f"{username}> {msg}".encode('utf-8'))
             else:
-                connected = False
                 if conn in client_list:
                     client_list.remove(conn)
+                    break
         except:
             continue
 
@@ -60,18 +56,14 @@ def broadcast(msg, conn):
 def start():
     server.listen()
     print(f"LISTENING ON {SERVER}")
-    connected = True
-    while connected:
+    while True:
         conn, addr = server.accept()
         client_list.append(conn)
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
+        username = conn.recv(1024).decode('utf-8')
+        username_list.append(username)
+        thread = threading.Thread(target=handle_client, args=(conn, addr, username))
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
-        if (threading.active_count() - 1) < 1:
-            connected = False
-            conn.close()
-            server.close()
-
 
 
 print("STARTING THE SERVER...")

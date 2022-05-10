@@ -1,33 +1,29 @@
 import socket
+import threading
 
-HEADER = 64
-IP = socket.gethostbyname(socket.gethostname())
 PORT = 5050
+SERVER = socket.gethostbyname(socket.gethostname())
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((IP, PORT))
+client.connect((SERVER, PORT))
 
-def send_message(msg):
+def send_message():
     try:
-        message = msg.encode('utf-8')
-        msg_length = len(message)
+        message = input(f"{my_username}> ")
+        msg = message.encode('utf-8')
+        msg_length = len(msg)
         send_length = str(msg_length).encode('utf-8')
-        send_length += b' ' * (HEADER - len(send_length))
+        send_length += b' ' * (1024 - len(send_length))
         client.send(send_length)
-        client.send(message)
-        print(client.recv(2048).decode('utf-8'))
+        client.send(msg)
+        print(client.recv(1024).decode('utf-8'))
     except IOError as e:
         print(f"{e}")
 
 
 my_username = input("Username: ")
-# trying to store a username somehow
-#client.send(my_username.encode('utf-8'))
-#print(client.recv(2048).decode('utf-8'))
+client.send(my_username.encode('utf-8'))
 
-connected = True
-while connected:
-    message = input(f"{my_username}> ")
-    send_message(message)
-    if message == "!quit":
-        connected = False
+
+while True:
+    send_message()
