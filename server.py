@@ -1,5 +1,6 @@
 import socket
 import threading
+import sys
 
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
@@ -11,12 +12,32 @@ client_list = []
 username_list = []
 
 
-def keywords(conn, addr, msg):
-    if msg == "!quit":
-        print("DISCONNECT")
-        #idk how to close the server properly
-    elif msg == "!who":
-        print(f"LIST_OF_CLIENT {client_list}")
+def keywords(conn, addr, msg, username):
+    try:
+        if msg[0] == "@":
+            firstWord = msg.split()[0]
+            sendUsername = firstWord.replace('@', '')
+            message = msg.replace(firstWord, '')
+            if sendUsername in username_list:
+                index = username_list.index(sendUsername)
+                connSend = client_list[index]
+                broadcast(message, connSend, username)
+            else:
+                conn.send(bytes(f"[{firstWord}] username does not exist", 'utf-8'))
+            conn.send(bytes("---", 'utf-8'))
+        elif msg == "!who":
+            print(f"LIST_OF_CLIENTS {username_list}")
+            data = f"LIST_OF_CLIENTS {username_list}"
+            conn.send(bytes(data, 'utf-8'))
+        elif msg == "!quit":
+            print(f"DISCONNECTED [{username}]")
+            client_list.remove(conn)
+            username_list.remove(username)
+        else:
+            conn.send(bytes("---", 'utf-8'))
+    except:
+        print("unknown Error occuder")
+
 
 
 def handle_client(conn, addr, username):
@@ -26,15 +47,10 @@ def handle_client(conn, addr, username):
             if msg_length:
                 msg_length = int(msg_length)
                 msg = conn.recv(msg_length).decode('utf-8')
-                print(f"{addr}> {msg}")
+                print(f"{username}> {msg}")
 
-                #threadKeywords = threading.Thread(target=keywords, args=(conn, addr, msg))
-                #threadKeywords.start()
-
-                threadBroadcast = threading.Thread(target=broadcast, args=(f"{addr}> {msg}", conn))
-                threadBroadcast.start()
-
-                conn.send(f"{username}> {msg}".encode('utf-8'))
+                threadKeywords = threading.Thread(target=keywords, args=(conn, addr, msg, username))
+                threadKeywords.start()
             else:
                 if conn in client_list:
                     client_list.remove(conn)
@@ -42,15 +58,9 @@ def handle_client(conn, addr, username):
         except:
             continue
 
-def broadcast(msg, conn):
-    for clients in client_list:
-        if clients != conn:
-            try:
-                clients.send(msg)
-            except:
-                clients.close()
-                if conn in client_list:
-                    client_list.remove(conn)
+
+def broadcast(msg, conn, username):
+    conn.send(bytes(f"{username}> {msg}", 'utf-8'))
 
 
 def start():
