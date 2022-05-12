@@ -12,7 +12,7 @@ client_list = []
 username_list = []
 
 
-def keywords(conn, addr, msg, username):
+def keywords(conn, msg, username):
     try:
         if msg[0] == "@":
             firstWord = msg.split()[0]
@@ -22,9 +22,10 @@ def keywords(conn, addr, msg, username):
                 index = username_list.index(sendUsername)
                 connSend = client_list[index]
                 broadcast(message, connSend, username)
+                conn.send(bytes("SEND-OK", 'utf-8'))
             else:
-                conn.send(bytes(f"[{firstWord}] username does not exist", 'utf-8'))
-            conn.send(bytes("---", 'utf-8'))
+                conn.send(bytes(f"[{firstWord}] UNKNOWN", 'utf-8'))
+            conn.send(bytes(" ", 'utf-8'))
         elif msg == "!who":
             print(f"LIST_OF_CLIENTS {username_list}")
             data = f"LIST_OF_CLIENTS {username_list}"
@@ -33,14 +34,16 @@ def keywords(conn, addr, msg, username):
             print(f"DISCONNECTED [{username}]")
             client_list.remove(conn)
             username_list.remove(username)
+        elif msg.split()[0] == "HELLO-FROM":
+            data = f"HELLO {username}"
+            conn.send(bytes(data, 'utf-8'))
         else:
-            conn.send(bytes("---", 'utf-8'))
+            conn.send(bytes(" ", 'utf-8'))
     except:
         sys.exit()
 
 
-
-def handle_client(conn, addr, username):
+def handle_client(conn, username):
     while True:
         try:
             msg_length = conn.recv(1024).decode('utf-8')
@@ -49,7 +52,7 @@ def handle_client(conn, addr, username):
                 msg = conn.recv(msg_length).decode('utf-8')
                 print(f"{username}> {msg}")
 
-                threadKeywords = threading.Thread(target=keywords, args=(conn, addr, msg, username))
+                threadKeywords = threading.Thread(target=keywords, args=(conn, msg, username))
                 threadKeywords.start()
             else:
                 if conn in client_list:
@@ -76,14 +79,17 @@ def start():
                 username = conn.recv(1024).decode('utf-8')
                 first = True
             else:
-                broadcast("This username already exist. Please pick a new one", conn, '')
+                broadcast("IN-USE. Please pick a new one username.", conn, '')
                 first = False
         else:
-            broadcast("Username is good.", conn, '')
-            username_list.append(username)
-            thread = threading.Thread(target=handle_client, args=(conn, addr, username))
-            thread.start()
-            print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
+            if len(client_list) > 2:
+                conn.send(bytes("BUSY.", 'utf-8'))
+            else:
+                broadcast("Username is good.", conn, '')
+                username_list.append(username)
+                thread = threading.Thread(target=handle_client, args=(conn, username))
+                thread.start()
+                print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 
 print("STARTING THE SERVER...")

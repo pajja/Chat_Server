@@ -1,5 +1,4 @@
 import socket
-import threading
 import sys
 
 PORT = 5050
@@ -27,10 +26,10 @@ def send_message():
         client.send(send_length)
         client.send(msg)
         keywords(message)
-        print(client.recv(1024).decode('utf-8'))
+        response = client.recv(1024).decode('utf-8')
+        print(response)
     except:
         sys.exit()
-
 
 
 my_username = input("Username: ")
@@ -42,6 +41,9 @@ while msgUser != "> Username is good.":
         my_username = input("Username: ")
         client.send(my_username.encode('utf-8'))
     msgUser = client.recv(1024).decode('utf-8')
+    if msgUser == "BUSY.":
+        print("BUSY.")
+        keywords("!quit")
     print(msgUser)
     first = False
 
