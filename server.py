@@ -36,7 +36,7 @@ def keywords(conn, addr, msg, username):
         else:
             conn.send(bytes("---", 'utf-8'))
     except:
-        print("unknown Error occuder")
+        sys.exit()
 
 
 
@@ -70,10 +70,20 @@ def start():
         conn, addr = server.accept()
         client_list.append(conn)
         username = conn.recv(1024).decode('utf-8')
-        username_list.append(username)
-        thread = threading.Thread(target=handle_client, args=(conn, addr, username))
-        thread.start()
-        print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
+        first = True
+        while username in username_list:
+            if first == False:
+                username = conn.recv(1024).decode('utf-8')
+                first = True
+            else:
+                broadcast("This username already exist. Please pick a new one", conn, '')
+                first = False
+        else:
+            broadcast("Username is good.", conn, '')
+            username_list.append(username)
+            thread = threading.Thread(target=handle_client, args=(conn, addr, username))
+            thread.start()
+            print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 
 print("STARTING THE SERVER...")

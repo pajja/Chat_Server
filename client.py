@@ -32,8 +32,18 @@ def send_message():
         sys.exit()
 
 
+
 my_username = input("Username: ")
 client.send(my_username.encode('utf-8'))
+msgUser = ''
+first = True
+while msgUser != "> Username is good.":
+    if first == False:
+        my_username = input("Username: ")
+        client.send(my_username.encode('utf-8'))
+    msgUser = client.recv(1024).decode('utf-8')
+    print(msgUser)
+    first = False
 
 
 while True:
