@@ -65,6 +65,8 @@ def handle_client(conn, username):
 def broadcast(msg, conn, username):
     conn.send(bytes(f"{username}> {msg}", 'utf-8'))
 
+def msgParser(msg):
+    key = msg.split(" ")[]
 
 def start():
     server.listen()
@@ -74,18 +76,18 @@ def start():
         client_list.append(conn)
         username = conn.recv(1024).decode('utf-8')
         first = True
-        while username in username_list:
+        if username in username_list:
             if first == False:
                 username = conn.recv(1024).decode('utf-8')
                 first = True
             else:
-                broadcast("IN-USE. Please pick a new one username.", conn, '')
+                broadcast("IN-USE", conn, '')
                 first = False
         else:
             if len(client_list) > 2:
                 conn.send(bytes("BUSY.", 'utf-8'))
             else:
-                broadcast("Username is good.", conn, '')
+                broadcast("HELLO "+ username, conn, '')
                 username_list.append(username)
                 thread = threading.Thread(target=handle_client, args=(conn, username))
                 thread.start()
