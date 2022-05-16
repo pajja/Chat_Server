@@ -14,31 +14,42 @@ username_list = []
 
 def keywords(conn, msg, username):
     try:
-        if msg[0] == "@":
-            firstWord = msg.split()[0]
-            sendUsername = firstWord.replace('@', '')
-            message = msg.replace(firstWord, '')
-            if sendUsername in username_list:
-                index = username_list.index(sendUsername)
-                connSend = client_list[index]
-                broadcast(message, connSend, username)
-                conn.send(bytes("SEND-OK", 'utf-8'))
-            else:
-                conn.send(bytes(f"[{firstWord}] UNKNOWN", 'utf-8'))
-            conn.send(bytes(" ", 'utf-8'))
-        elif msg == "!who":
-            print(f"LIST_OF_CLIENTS {username_list}")
-            data = f"LIST_OF_CLIENTS {username_list}"
-            conn.send(bytes(data, 'utf-8'))
-        elif msg == "!quit":
-            print(f"DISCONNECTED [{username}]")
-            client_list.remove(conn)
-            username_list.remove(username)
-        elif msg.split()[0] == "HELLO-FROM":
-            data = f"HELLO {username}"
-            conn.send(bytes(data, 'utf-8'))
-        else:
-            conn.send(bytes(" ", 'utf-8'))
+        if msg.split()[0] == "HELLO-FROM\n":
+            print(f"HELLO {username}\n")
+        elif msg.split()[0] == "WHO\n":
+            print(f"WHO-OK {username_list}\n")
+        elif msg.split()[0] == "HELLO-FROM\n":
+            print(f"HELLO {username}\n")
+        elif msg.split()[0] == "HELLO-FROM\n":
+            print(f"HELLO {username}\n")
+        elif msg.split()[0] == "HELLO-FROM\n":
+            print(f"HELLO {username}\n")
+
+        # if msg[0] == "@":
+        #     firstWord = msg.split()[0]
+        #     sendUsername = firstWord.replace('@', '')
+        #     message = msg.replace(firstWord, '')
+        #     if sendUsername in username_list:
+        #         index = username_list.index(sendUsername)
+        #         connSend = client_list[index]
+        #         broadcast(message, connSend, username)
+        #         conn.send(bytes("SEND-OK", 'utf-8'))
+        #     else:
+        #         conn.send(bytes(f"[{firstWord}] UNKNOWN", 'utf-8'))
+        #     conn.send(bytes(" ", 'utf-8'))
+        # elif msg == "!who":
+        #     print(f"LIST_OF_CLIENTS {username_list}")
+        #     data = f"LIST_OF_CLIENTS {username_list}"
+        #     conn.send(bytes(data, 'utf-8'))
+        # elif msg == "!quit":
+        #     print(f"DISCONNECTED [{username}]")
+        #     client_list.remove(conn)
+        #     username_list.remove(username)
+        # elif msg.split()[0] == "HELLO-FROM":
+        #     data = f"HELLO {username}"
+        #     conn.send(bytes(data, 'utf-8'))
+        # else:
+        #     conn.send(bytes(" ", 'utf-8'))
     except:
         sys.exit()
 
@@ -82,7 +93,7 @@ def start():
                 broadcast("IN-USE. Please pick a new one username.", conn, '')
                 first = False
         else:
-            if len(client_list) > 2:
+            if len(client_list) > 64:
                 conn.send(bytes("BUSY.", 'utf-8'))
             else:
                 broadcast("Username is good.", conn, '')
