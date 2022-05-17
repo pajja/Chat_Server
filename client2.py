@@ -6,7 +6,7 @@ import os
 
 
 PORT = 5378
-SERVER = "127.0.1.1"
+SERVER = socket.gethostbyname(socket.gethostname())
 BUFFER = 4096
 # Make a dynamic buffer
 global client
@@ -161,7 +161,6 @@ def login():
 
         msg = client.recv(BUFFER)
         if not msg:
-
             client.close()
             client.connect((SERVER, PORT))
 
