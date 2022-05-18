@@ -94,11 +94,14 @@ def messageToCommandConverter(msg):
                 name += i
             msgArr[0] = name
 
-        totalMsg = ""
-        for i in msgArr:
-            totalMsg += i + " "
+            totalMsg = ""
+            for i in msgArr:
+                totalMsg += i + " "
 
-        return "SEND "+ totalMsg + "\n"
+            return "SEND " + totalMsg + "\n"
+        else:
+            print("Unknown command. Please enter an existing command.")
+            return ''
 
 
 
@@ -108,8 +111,15 @@ def sendNewMessage(a):
     while True:
         if not handshaked:
             break
-        newMsg = input(a+": ")
-        newMsg = messageToCommandConverter(newMsg)
+        try:
+            newMsg = input(a+": ")
+            newMsg = messageToCommandConverter(newMsg)
+            while newMsg == '':
+                newMsg = input(a + ": ")
+                newMsg = messageToCommandConverter(newMsg)
+        except:
+            continue
+
 
         if not handshaked:
             break
@@ -166,7 +176,7 @@ def login():
 
         else:
             msg = msg.decode("UTF-8")
-
+            print(msg)
             keyParser(msg, name)
 
 
