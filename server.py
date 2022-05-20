@@ -11,6 +11,7 @@ server.bind((SERVER, PORT))
 client_list = []
 username_list = []
 
+global connOriginal
 
 def keywords(conn, msg, username):
     try:
@@ -29,10 +30,8 @@ def keywords(conn, msg, username):
             print(f"sending to {msg.split()[1]}")
             index = username_list.index(msg.split()[1])
             connToSend = client_list[index]
-            print(connToSend)
-            print(conn)
             broadcast(connToSend, f"DELIVERY {msg.split()[1]} {fullMsg}\n")
-            print("issiusta")
+            broadcast(connToSend, username)
         elif msg.split()[1] not in username_list:
             broadcast(conn, f"UNKNOWN")
         elif key == "HELLO-FROM\n":
@@ -81,9 +80,7 @@ def remove(conn):
 
 
 def broadcast(conn, msg):
-    print("broadcast")
     conn.send(bytes(f"{msg}", 'utf-8'))
-    print(f"Buvo broadcastinta: {msg}")
 
 def start():
     server.listen()

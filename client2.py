@@ -25,8 +25,11 @@ quit = False
 thread = threading.Thread()
 threadListen = threading.Thread()
 
-def whoInServer(msg):
-    print("User list :", msg)
+def whoInServer(msgArr):
+    userList = ""
+    for i in range(1, len(msgArr)):
+        userList += msgArr[i] + " "
+    print("User list :", userList)
 
 def newMessage(user, message):
     if user != username:
@@ -42,27 +45,27 @@ def keyParser(message:str, name):
 
     if key == "WHO-OK":
         waitingResp = False
-        userList = ""
-        for i in range(1, len(msgArr)):
-            userList += msgArr[i] + " "
-        whoInServer(userList)
+        whoInServer(msgArr)
     elif key == "SEND-OK":
         waitingResp = False
         print("Message Sent")
     elif key == "DELIVERY":
+        global connSender
+        connSender = client.recv(1024).decode("UTF-8")
         recvMsg = ""
         for i in range(2, len(msgArr)):
             recvMsg += msgArr[i] + " "
-        print(recvMsg)
+        print(f"DELIVERY from {connSender}: {recvMsg}")
         newMessage(msgArr[1], recvMsg)
     elif key == "UNKNOWN":
+        print("UNKNOWN")
         global handshaked
         handshaked = False
         login()
-
     elif message == "BUSY\n":
         waitingResp = False
         print("Server is Busy please wait.")
+        os._exit(1)
     elif message == "BAD-RQST-HDR\n":
         waitingResp = False
         print("Header sent to the server has faults")
@@ -71,6 +74,7 @@ def keyParser(message:str, name):
         print("Body sent to the server has faults")
     elif message == "IN-USE\n":
         print("Username already in use. Please pick another username")
+        os._exit(1)
         reconnectWithoutClose()
     elif message == "HELLO "+name + "\n":
         handshaked = True
@@ -154,7 +158,9 @@ def serverListen():
             character = client.recv(1).decode("UTF-8")
             recvMsg += character
 
-
+        # if recvMsg.split()[0] == "DELIVERY":
+        #     global connSender
+        #     connSender = client.recv(1024).decode("UTF-8")
 
         keyParser(recvMsg, username)
 
@@ -178,9 +184,6 @@ def login():
             msg = msg.decode("UTF-8")
             print(msg)
             keyParser(msg, name)
-
-
-
 
     username = name
 
