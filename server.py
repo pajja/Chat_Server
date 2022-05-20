@@ -17,7 +17,9 @@ def keywords(conn, msg, username):
     try:
         key = msg.split()[0]
 
-        if key == "WHO":
+        if msg.split()[1] not in username_list:
+            broadcast(conn, f"UNKNOWN\n")
+        elif key == "WHO":
             broadcast(conn, f"WHO-OK {username_list}\n")
         elif key == "SEND":
             broadcast(conn, f"SEND-OK {username}\n")
@@ -32,8 +34,6 @@ def keywords(conn, msg, username):
             connToSend = client_list[index]
             broadcast(connToSend, f"DELIVERY {msg.split()[1]} {fullMsg}\n")
             broadcast(connToSend, username)
-        elif msg.split()[1] not in username_list:
-            broadcast(conn, f"UNKNOWN")
         elif key == "HELLO-FROM\n":
             broadcast(conn, f"HELLO {username}\n")
     except:
@@ -47,9 +47,9 @@ def first_handshake(conn, addr):
     if firstHandshake.split()[0] == "HELLO-FROM":
         broadcast(conn, f"HELLO {username}\n")
         print(f"{addr} username: {username}")
-
         if username in username_list:
             broadcast(conn, "IN-USE\n")
+            first_handshake(conn, addr)
         else:
             if len(client_list) > 64:
                 broadcast(conn, "BUSY\n")

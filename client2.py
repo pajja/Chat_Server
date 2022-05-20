@@ -57,8 +57,8 @@ def keyParser(message:str, name):
             recvMsg += msgArr[i] + " "
         print(f"DELIVERY from {connSender}: {recvMsg}")
         newMessage(msgArr[1], recvMsg)
-    elif key == "UNKNOWN":
-        print("UNKNOWN")
+    elif key == "IN-USE":
+        print("Username already in use. Please pick another username")
         global handshaked
         handshaked = False
         login()
@@ -72,8 +72,8 @@ def keyParser(message:str, name):
     elif message == "BAD-RQST-BODY\n":
         waitingResp = False
         print("Body sent to the server has faults")
-    elif message == "IN-USE\n":
-        print("Username already in use. Please pick another username")
+    elif message == "UNKNOWN\n":
+        print("UNKNOWN")
         os._exit(1)
         reconnectWithoutClose()
     elif message == "HELLO "+name + "\n":
