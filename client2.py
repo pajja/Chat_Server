@@ -25,11 +25,8 @@ quit = False
 thread = threading.Thread()
 threadListen = threading.Thread()
 
-def whoInServer(msgArr):
-    userList = ""
-    for i in range(1, len(msgArr)):
-        userList += msgArr[i] + " "
-    print("User list :", userList)
+def whoInServer(msg):
+    print("User list :", msg)
 
 def newMessage(user, message):
     if user != username:
@@ -45,7 +42,10 @@ def keyParser(message:str, name):
 
     if key == "WHO-OK":
         waitingResp = False
-        whoInServer(msgArr)
+        userList = ""
+        for i in range(1, len(msgArr)):
+            userList += msgArr[i] + " "
+        whoInServer(userList)
     elif key == "SEND-OK":
         waitingResp = False
         print("Message Sent")

@@ -16,11 +16,13 @@ global connOriginal
 def keywords(conn, msg, username):
     try:
         key = msg.split()[0]
+        print(key)
 
-        if msg.split()[1] not in username_list:
-            broadcast(conn, f"UNKNOWN\n")
-        elif key == "WHO":
+        if key == "WHO":
+            print("who ok")
             broadcast(conn, f"WHO-OK {username_list}\n")
+        elif msg.split()[1] not in username_list:
+            broadcast(conn, f"UNKNOWN\n")
         elif key == "SEND":
             broadcast(conn, f"SEND-OK {username}\n")
             i = 2
@@ -36,6 +38,8 @@ def keywords(conn, msg, username):
             broadcast(connToSend, username)
         elif key == "HELLO-FROM\n":
             broadcast(conn, f"HELLO {username}\n")
+        else:
+            print("Unknown key")
     except:
         sys.exit()
 
@@ -71,12 +75,14 @@ def handle_client(conn, username):
             threadKeywords = threading.Thread(target=keywords, args=(conn, msg, username))
             threadKeywords.start()
         except:
-            continue
+            remove(conn, username)
+            break
 
 
-def remove(conn):
+def remove(conn, username):
     if conn in client_list:
         client_list.remove(conn)
+        username_list.remove(username)
 
 
 def broadcast(conn, msg):
